@@ -19,7 +19,7 @@ def percentage(value):
 def check_usage(used_percent, threshold=80):
     used_percent = percentage(used_percent)
     threshold = percentage(threshold)
-    return "WARNING" if used_percent > threshold else "OK"
+    return "WARNING" if used_percent >= threshold else "OK"
 
 
 def disk_percent(path):
