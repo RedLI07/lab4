@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+dist/
+deploy/
+evidence/
+reports/
+*.zip
+*.pdf
+*.docx
+.DS_Store

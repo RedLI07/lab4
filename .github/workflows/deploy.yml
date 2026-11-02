@@ -1,0 +1,55 @@
+name: Deploy test
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: ID успешного CI из main
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  APP_PORT: '8109'
+  PYTHONUNBUFFERED: '1'
+
+jobs:
+  deploy_test:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    container: python:3.12.7-slim
+    environment:
+      name: test/disk
+      url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - name: Approve source run
+        id: release
+        run: python ci/release.py
+        env:
+          SOURCE_RUN_ID: ${{ inputs.run_id }}
+          GITHUB_TOKEN: ${{ github.token }}
+      - uses: actions/download-artifact@v8.0.2
+        with:
+          name: disk-check-${{ steps.release.outputs.sha }}
+          path: dist/
+          run-id: ${{ inputs.run_id }}
+          github-token: ${{ github.token }}
+      - name: Deploy and smoke test
+        run: python ci/deploy.py
+        env:
+          SOURCE_SHA: ${{ steps.release.outputs.sha }}
+          SOURCE_RUN_ID: ${{ inputs.run_id }}
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+      - uses: actions/upload-artifact@v7.0.2
+        if: always()
+        with:
+          name: deployment-${{ github.run_id }}
+          path: deploy/test/
+          retention-days: 7
+          if-no-files-found: error
