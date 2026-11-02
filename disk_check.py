@@ -37,7 +37,7 @@ def load_settings(path):
             "threshold": percentage(settings.get("threshold", 80))}
 
 
-def main(argv=None):
+def renamed_main(argv=None):
     parser = argparse.ArgumentParser(description="Проверка заполнения диска")
     parser.add_argument("--config", help="Путь к JSON-конфигурации")
     parser.add_argument("--path", help="Путь на проверяемом диске")
